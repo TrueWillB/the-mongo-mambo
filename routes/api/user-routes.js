@@ -35,7 +35,31 @@ router.post("/", async (req, res) => {
     res.status(500).json(err);
   }
 });
-module.exports = router;
+
+router.put("/:userId", async (req, res) => {
+  try {
+    const result = await User.findOneAndUpdate(
+      { _id: req.params.userId },
+      req.body,
+      { new: true } //returns the updated document, not the original document
+    ).populate("thoughts");
+    res.status(200).json(result);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+});
+
+//This does not yet delete associated friends and thoughts. That should be easy to add once MVP is reached
+router.delete("/:userId", async (req, res) => {
+  try {
+    const result = await User.findOneAndDelete({ _id: req.params.userId });
+    res.status(200).json(result);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+});
 
 //This function adds friends to a user and updates the other user's friends list as well
 router.post("/:userId/friends/:friendId", async (req, res) => {
@@ -77,3 +101,5 @@ router.delete("/:userId/friends/:friendId", async (req, res) => {
     res.status(500).json(err);
   }
 });
+
+module.exports = router;
