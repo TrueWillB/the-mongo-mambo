@@ -43,7 +43,7 @@ router.put("/:userId", async (req, res) => {
       req.body,
       { new: true } //returns the updated document, not the original document
     ).populate("thoughts");
-    res.status(200).json(result);
+    res.status(200).json(`User ${req.params.userId} updated`);
   } catch (err) {
     console.log(err);
     res.status(500).json(err);
@@ -54,7 +54,7 @@ router.put("/:userId", async (req, res) => {
 router.delete("/:userId", async (req, res) => {
   try {
     const result = await User.findOneAndDelete({ _id: req.params.userId });
-    res.status(200).json(result);
+    res.status(200).json(`User ${result.username} deleted`);
   } catch (err) {
     console.log(err);
     res.status(500).json(err);
