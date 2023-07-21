@@ -28,24 +28,6 @@ router.get("/:thoughtId", async (req, res) => {
 //This route also ensures that a username is supplied and is valid
 router.post("/", async (req, res) => {
   try {
-    // const postingThought = await Thought.create(req.body);
-
-    // if (req.body.userId) {
-    //   //If the user ID supplied does not exist, the thought will not be created
-    //   if (!User.findOne({ _id: req.body.userId })) {
-    //     res.status(404).json({
-    //       message: "No user found with this username/id! Thought not created",
-    //     });
-    //   } else {
-    //     const postingThought = await Thought.create(req.body);
-    //     const user = await User.findOneAndUpdate(
-    //       { _id: req.body.userId },
-    //       { $addToSet: { thoughts: postingThought._id } },
-    //       { new: true }
-    //     );
-    //   }
-    // } else
-
     if (req.body.username) {
       //This does take extra time in an api call, but I it ensures that you don't enter an incorrect username and create an orphaned thought
       if (!(await User.findOne({ username: req.body.username }))) {
