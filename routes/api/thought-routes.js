@@ -45,11 +45,12 @@ router.post("/", async (req, res) => {
     //     );
     //   }
     // } else
+
     if (req.body.username) {
       //This does take extra time in an api call, but I it ensures that you don't enter an incorrect username and create an orphaned thought
       if (!(await User.findOne({ username: req.body.username }))) {
         res.status(404).json({
-          message: "No user found with this username/id! Thought not created",
+          message: "No user found with this username Thought not created",
         });
       } else {
         const postingThought = await Thought.create(req.body);
@@ -64,9 +65,76 @@ router.post("/", async (req, res) => {
       }
     } else {
       res.status(400).json({
-        message: "No username or userId supplied, thought not created",
+        message:
+          "No username supplied, thought not created. Please supply valid username",
       });
     }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+});
+
+//route to update a thought by its _id
+router.put("/:thoughtId", async (req, res) => {
+  try {
+    const result = await Thought.findOneAndUpdate(
+      { _id: req.params.thoughtId },
+      req.body,
+      { new: true } //returns the updated document, not the original document
+    );
+    res.status(200).json(`Thought ${req.params.thoughtId} updated: ${result}`);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+});
+
+//route to delete a thought by its _id and remove the thought from the associated user's thoughts
+router.delete("/:thoughtId", async (req, res) => {
+  try {
+    const result = await Thought.findOneAndDelete({
+      _id: req.params.thoughtId,
+    });
+    await User.findOneAndUpdate(
+      { username: result.username },
+      { $pull: { thoughts: req.params.thoughtId } }
+    );
+    res.status(200).json(`Thought ${req.params.thoughtId} deleted`);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+});
+
+//This is the route to add a reaction to a thought
+router.post("/:thoughtId/reactions", async (req, res) => {
+  try {
+    const result = await Thought.findOneAndUpdate(
+      { _id: req.params.thoughtId },
+      { $addToSet: { reactions: req.body } },
+      { new: true }
+    );
+    res.status(200).json(`Reaction added to thought ${req.params.thoughtId}`);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+});
+
+//This is the route to delete and pull a reaction from a thought
+router.delete("/:thoughtId/reactions", async (req, res) => {
+  try {
+    const result = await Thought.findOneAndUpdate(
+      { _id: req.params.thoughtId },
+      { $pull: { reactions: { _id: req.body.reactionId } } },
+      { new: true }
+    );
+    res
+      .status(200)
+      .json(
+        `Reaction ${req.body.reactionId} deleted from thought ${req.params.thoughtId}`
+      );
   } catch (err) {
     console.log(err);
     res.status(500).json(err);

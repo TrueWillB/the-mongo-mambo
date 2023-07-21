@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { User } = require("../../models");
+const { User, Thought } = require("../../models");
 const db = require("../../config/connection");
 const { cp } = require("fs");
 
@@ -53,8 +53,13 @@ router.put("/:userId", async (req, res) => {
 //This does not yet delete associated friends and thoughts. That should be easy to add once MVP is reached
 router.delete("/:userId", async (req, res) => {
   try {
+    const userData = await User.findOne({ _id: req.params.userId });
+    //delete all thoughts associated with the user
+    await Thought.deleteMany({ username: userData.username });
     const result = await User.findOneAndDelete({ _id: req.params.userId });
-    res.status(200).json(`User ${result.username} deleted`);
+    res
+      .status(200)
+      .json(`User ${result.username} and all associated thoughts deleted`);
   } catch (err) {
     console.log(err);
     res.status(500).json(err);
